@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bird Animation with Music</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Infinite loop of bird animation with background music and optimized for SEO.">
+    <meta name="keywords" content="bird animation, background music, infinite loop, SEO optimized, browser support">
+    <meta name="author" content="Umair's Client">
+    
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #fff;
+        }
+
+        /* Full-screen GIF as background */
+        body {
+            background-image: url('https://i.pinimg.com/originals/a8/38/83/a83883bc09c956f67033a83d1a1f1240.gif');
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        #counter {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 12px;
+            color: black;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 5px;
+            border-radius: 5px;
+            z-index: 2;
+        }
+
+        /* Outdated Browser Message */
+        #outdatedMessage {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            color: white;
+            font-size: 18px;
+            text-align: center;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 3;
+        }
+
+        #okButton {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #okButton:hover {
+            background-color: #0056b3;
+        }
+
+        /* Play Button */
+        #playButton {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #playButton:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Outdated Browser Message -->
+    <div id="outdatedMessage">
+        <div>
+            <p>Your browser is outdated. Please update to a modern browser for the best experience.</p>
+            <button id="okButton" onclick="closeMessage()">OK</button>
+        </div>
+    </div>
+
+    <div id="container">
+        <div id="counter">0s</div>
+    </div>
+
+    <!-- Play Button (Only shown if autoplay is blocked) -->
+    <button id="playButton" style="display: none;" onclick="playMusic()">Play Music</button>
+
+    <!-- YouTube iframe -->
+    <div id="player" style="display: none;"></div>
+
+    <script>
+        var player;
+        var secondsOnPage = 0;
+
+        // Load YouTube IFrame API
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '0', // Hide the video
+                width: '0',  // Only audio
+                videoId: 'R9eC3WBRKeY', // YouTube video ID for provided video
+                playerVars: {
+                    'loop': 1,
+                    'playlist': 'R9eC3WBRKeY',
+                    'autoplay': 1
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        // Play the video/audio when ready
+        function onPlayerReady(event) {
+            try {
+                event.target.playVideo();
+                startCounter();
+            } catch (e) {
+                // Show play button if autoplay is blocked
+                document.getElementById('playButton').style.display = 'block';
+            }
+        }
+
+        function playMusic() {
+            player.playVideo();
+            document.getElementById('playButton').style.display = 'none';
+            startCounter();
+        }
+
+        function onPlayerStateChange(event) {
+            if (event.data === YT.PlayerState.ENDED) {
+                player.playVideo(); // Loop the video
+            }
+        }
+
+        // Start counter
+        function startCounter() {
+            setInterval(function() {
+                secondsOnPage++;
+                document.getElementById('counter').innerText = secondsOnPage + "s";
+            }, 1000);
+        }
+
+        // Detect outdated browsers
+        function detectOutdatedBrowser() {
+            var ua = navigator.userAgent;
+            var outdated = false;
+
+            // Detect Internet Explorer 11 and below
+            var oldIE = ua.indexOf('MSIE ') > -1 || ua.indexOf('Trident/') > -1;
+
+            // Detect Chrome 11 and below
+            var chromeMatch = ua.match(/Chrome\/(\d+)/);
+            var oldChrome = chromeMatch && parseInt(chromeMatch[1]) <= 11;
+
+            // Detect Firefox 11 and below
+            var firefoxMatch = ua.match(/Firefox\/(\d+)/);
+            var oldFirefox = firefoxMatch && parseInt(firefoxMatch[1]) <= 11;
+
+            // Detect Safari 11 and below
+            var safariMatch = ua.match(/Version\/(\d+).*Safari/);
+            var oldSafari = safariMatch && parseInt(safariMatch[1]) <= 11;
+
+            // Detect other outdated browsers (e.g., Opera) using missing features
+            var noModernFeatures = !('fetch' in window) || !('Promise' in window) || !('IntersectionObserver' in window);
+
+            // If any of the old browsers are detected
+            outdated = oldIE || oldChrome || oldFirefox || oldSafari || noModernFeatures;
+
+            if (outdated) {
+                document.getElementById('outdatedMessage').style.display = 'flex';
+            }
+        }
+
+        detectOutdatedBrowser();
+
+        // YouTube API script
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    </script>
+</body>
+</html>
